@@ -28,27 +28,27 @@ class TestModule(unittest.TestCase):
 # test GNN
 class TestGNN(unittest.TestCase):
     def setUp(self):
-        D = 3
-        W = np.ones((D, D))
-        self.gnn = GNN(D, W)
-
         input_1 = [[0., 1., 0., 0.],
-                         [1., 0., 1., 1.],
-                         [0., 1., 0., 1.],
-                         [0., 1., 1., 0.]] # non batch
+                   [1., 0., 1., 1.],
+                   [0., 1., 0., 1.],
+                   [0., 1., 1., 0.]] # non batch
         input_2 = [[[0., 1., 0., 0.],
-                          [1., 0., 1., 1.],
-                          [0., 1., 0., 1.],
-                          [0., 1., 1., 0.]]] # batch
+                    [1., 0., 1., 1.],
+                    [0., 1., 0., 1.],
+                    [0., 1., 1., 0.]], 
+                    [[0., 1., 0., 0.],
+                    [1., 0., 1., 1.],
+                    [0., 1., 0., 1.],
+                    [0., 1., 1., 0.]]] # batch
 
         input_3 = np.array([[0., 1., 0., 0.],
-                                 [1., 0., 1., 1.],
-                                 [0., 1., 0., 1.],
-                                 [0., 1., 1., 0.]]) # non batch
+                            [1., 0., 1., 1.],
+                            [0., 1., 0., 1.],
+                            [0., 1., 1., 0.]]) # non batch
         input_4 = np.array([[[0., 1., 0., 0.],
-                                  [1., 0., 1., 1.],
-                                  [0., 1., 0., 1.],
-                                  [0., 1., 1., 0.]]]) # batch
+                            [1., 0., 1., 1.],
+                            [0., 1., 0., 1.],
+                            [0., 1., 1., 0.]]]) # batch
         
         self.inputs = [input_1, input_2, input_3, input_4]
     
@@ -65,8 +65,29 @@ class TestGNN(unittest.TestCase):
     
     def check_numetric_forward(self, inputs):
         # 値の計算があっているか
-        pass
+        # case input_1
+        D = 1
+        W = np.ones((D, D)) * 1.5
+        gnn = GNN(D, W)
+        
+        T = 1
+        x = gnn(inputs[0], T)
+        self.assertTrue(np.round(x, 5) ==  np.array([12.]))
+        T = 2
+        x = gnn(inputs[0], T)
+        self.assertTrue(np.round(x, 5) ==  np.array([40.5]))
+
+        # case input_2
+        D = 2
+        W = np.array([[0.5, -1.],
+                      [-0.5, 0.1]])
+        gnn = GNN(D, W)
+
+        T = 1
+        x = gnn(inputs[1], T)
+        self.assertTrue(np.round(x, 5) == np.array([4., -4.]))
     
+
     def check_forward(self, inputs):
         # 行列演算にしたことがあっているか
         pass
