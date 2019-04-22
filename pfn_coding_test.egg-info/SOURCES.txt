@@ -1,5 +1,4 @@
 README.md
-setup.cfg
 setup.py
 pfn_coding_test.egg-info/PKG-INFO
 pfn_coding_test.egg-info/SOURCES.txt
@@ -7,10 +6,13 @@ pfn_coding_test.egg-info/dependency_links.txt
 pfn_coding_test.egg-info/requires.txt
 pfn_coding_test.egg-info/top_level.txt
 src/__init__.py
+src/main_1.py
 src/common/NNfunctions.py
 src/common/NNmodules.py
+src/common/NNoptim.py
 src/common/__init__.py
 src/common/nets.py
 tests/__init__.py
 tests/common/__init__.py
 tests/common/test_NNfunctions.py
+tests/common/test_NNmodules.py

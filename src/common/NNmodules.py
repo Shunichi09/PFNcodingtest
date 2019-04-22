@@ -6,7 +6,7 @@ from .NNfunctions import sigmoid, relu
 class Module():
     """
     Base class for nn module
-    NN の moduleのベースクラスです
+    NN の moduleのベースクラス
     """
     def __init__(self):
         """
@@ -34,7 +34,7 @@ class GNN(Module):
     states : numpy.ndarray, shape(D, )
         states of GNN, GNNの状態
     """
-    def __init__(self, D):
+    def __init__(self, D, W=None):
         """
         Parameters
         -----------
@@ -42,8 +42,13 @@ class GNN(Module):
             size of dimention of the weights, 重みWの次元
         """
         super().__init__()
-        self.W = np.random.normal(loc=0, scale=0.4, size=(D, D))
+        self.W = W
+        if W is None:
+            self.W = np.random.normal(loc=0, scale=0.4, size=(D, D))
         self.states = None
+
+        if self.W.shape[0] != D:
+            raise ValueError("dimention of weight and dimesion are not equal")
     
     def forward(self, x, T):
         """ Forward propagation
