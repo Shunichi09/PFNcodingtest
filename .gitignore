@@ -1,0 +1,8 @@
+*.csv
+*.log
+*.pickle
+*.mp4
+
+.cache/
+.egg_info/
+__pycache__/
