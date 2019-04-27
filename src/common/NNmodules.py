@@ -3,28 +3,7 @@ import numpy as np
 
 # original modules
 from .NNfunctions import sigmoid, relu
-
-class Module():
-    """
-    Base class for nn module
-    NN の moduleのベースクラス
-    """
-    def __init__(self):
-        """
-        """
-        pass
-    
-    def forward(self, *inputs):
-        """
-        継承した先でforward methodを実装してください
-        """
-        raise NotImplementedError
-
-    def __call__(self, *inputs):
-        """
-        """
-        output = self.forward(*inputs)
-        return output
+from .NNbase import Parameter, Module
 
 class GNN(Module):
     """graph neural network

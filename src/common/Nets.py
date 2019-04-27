@@ -1,17 +1,22 @@
 import numpy as np
 
 # original modules
-from NNfuntions import softmax, relu
+from .NNfunctions import relu, sigmoid
+from .NNmodules import GNN, Linear, BinaryCrossEntropyLossWithSigmoid
 
 class VanillaGNN():
-    """
+    """ vanilla gnn
     Attributes
     ------------
-
+    layers : list
+        list of layers
+    fc1 : GNN class
+        1st layer
+    fc2 : Linear class
+        2nd layer
 
     See also
     -----------
-    relu, in layers.py
 
     """
     def __init__(self):
@@ -26,13 +31,14 @@ class VanillaGNN():
         self.fc2 = Linear(D, 1)
         self.layers.append(self.fc2)
 
-        # weight initialize
+        # define loss func
+        self.loss_fn = BinaryCrossEntropyLossWithSigmoid()
     
     def forward(self, x, T=2):
         """
         Parameters
         -------------
-        x : array-like
+        x : array-like, shape(N, in_features)
             ネットワークへの入力、グラフの構造
         T : int, optional
             aggregateする回数, default is 2
@@ -40,9 +46,11 @@ class VanillaGNN():
         Returns
         ----------
         p : numpy.ndarray, shape(N, 1)
-            予測確率
+            predicted value, 予測確率
         predict : numpy.ndarray, shape(N, 1)
-            予測ラベル（0 or 1）
+            predicted label, 予測ラベル（0 or 1）
+        loss : float
+            loss value, 損失関数の値
         """
         # to numpy
         x = np.array(x)
@@ -54,12 +62,15 @@ class VanillaGNN():
         s = self.fc2(hg)
 
         # activation
-        p = softmax(s)
+        p = sigmoid(s)
         predict = p > 0.5
-    
-        return p, predict
 
-    def backward(self, output):
+        # loss
+        loss = self.loss_fn(s)
+    
+        return p, predict, loss
+
+    def numercial_grad(self, output):
         """
 
         """

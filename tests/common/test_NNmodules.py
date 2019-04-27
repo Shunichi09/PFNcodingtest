@@ -4,26 +4,7 @@ import numpy as np
 
 # original modules
 from src.common.NNfunctions import sigmoid, relu
-from src.common.NNmodules import Module, GNN, Linear, BinaryCrossEntropyLossWithSigmoid
-
-# test Module
-class TestModule(unittest.TestCase):
-    def setUp(self):
-        self.module = Module()
-
-    def test_forward(self):
-        # forwardのエラーがでるか
-        test_input = [None]
-        with self.assertRaises(NotImplementedError):
-            self.module.forward(test_input)
-
-    def test_call(self): 
-        # forwardが呼ばれているか
-        test_input = [None]
-
-        self.module.forward = MagicMock(return_value="forward_propagation")
-        self.assertEqual(self.module(test_input), "forward_propagation")
-        self.module.forward.assert_called_once() # 一回かどうか
+from src.common.NNmodules import GNN, Linear, BinaryCrossEntropyLossWithSigmoid
 
 # test GNN
 class TestGNN(unittest.TestCase):

@@ -8,6 +8,7 @@ class Optimizer():
 
     def step(self):
         """
+        you should implement in your optimizer
         """
         raise NotImplementedError
 
