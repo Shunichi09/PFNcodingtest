@@ -10,8 +10,13 @@ class GNN(Module):
 
     Attributes
     -------------
-    W : numpy.ndarray, shape(D, D)
+    W : Parameter class, shape(D, D)
         weights of graph, GNNの重み
+    
+    See also
+    ------------
+    Parameter in NNbase.py
+    Module in NNbase.py
     
     Example
     ---------
@@ -51,18 +56,18 @@ class GNN(Module):
         seed : int, optional
             seed of random state, default is None 
         """
-        super().__init__()
+        super(GNN, self).__init__()
 
-        self.W = np.array(W)        
+        self.W = Parameter(np.array(W))
 
         if W is None:
             np.random.seed(seed)
-            self.W = np.random.normal(loc=0, scale=0.4, size=(D, D))
-
-        self._paramaters = [self.W]
-
-        if self.W.shape != (D, D):
+            self.W = Parameter(np.random.normal(loc=0, scale=0.4, size=(D, D)))
+        
+        if self.W.val.shape != (D, D):
             raise ValueError("dimention of weight and dimesion are not equal")
+
+        self.register_parameters(self.W)
     
     def forward(self, x, T):
         """ Forward propagation, xが3dの場合、0埋めでpaddingを行い、計算します
@@ -81,7 +86,7 @@ class GNN(Module):
         self._check_condition(x, T)
 
         # save initial conditions
-        D = self.W.shape[0] # dimension        
+        D = self.W.val.shape[0] # dimension        
         x = np.array(x) 
         if x.ndim == 2: # 2d to 3d
             x = x[np.newaxis, :, :]
@@ -93,26 +98,17 @@ class GNN(Module):
         states = np.zeros((N, D, max(nums_node)))
         pad_x = np.zeros((N, max(nums_node), max(nums_node)))
 
-        # print("pad_x = \n{}".format(states))
-
         for i, num_node in enumerate(nums_node): # padding
             # x padding
             pad_x[i, :num_node, :num_node] = np.array(x[i], dtype=float)
             # initialize states
             states[i, 0, :num_node] = np.ones(num_node)
 
-        # print("init state = \n{}".format(states))
-        # print("pad_x = \n{}".format(pad_x))
-
-        for _ in range(T):
+        for _ in range(T): # aggregate
             a = np.matmul(states, pad_x)
-            # print("middle_1 = \n{}".format(a))
-            states = relu(np.matmul(self.W, a))
-            # print("middle_2 = \n{}".format(states))
+            states = relu(np.matmul(self.W.val, a))
         
-        # print("state = \n{}".format(states))
         output = np.sum(states, axis=-1)
-        # print("output = \n{}".format(output))
 
         return output
 
@@ -136,10 +132,15 @@ class Linear(Module):
     """ Linear layer, y = Ax + b
     Attributes
     -----------
-    A : numpy.ndarray, shape(in_features, out_features)
+    A : Parameter class, shape(in_features, out_features)
         weights of the linear layer
-    b : numpy.ndarray, shape(out_features, )
+    b : Parameter class, shape(out_features, )
         bias of the linear layer
+    
+    See also
+    ------------
+    Parameter in NNbase.py
+    Module in NNbase.py
     
     Example
     ----------
@@ -178,27 +179,27 @@ class Linear(Module):
         seed : int, optional
             seed of random state, default is None 
         """
-        super().__init__()
-        self.A = np.array(A)
-        self.b = np.array(b)
+        super(Linear, self).__init__()
+        self.A = Parameter(np.array(A))
+        self.b = Parameter(np.array(b))
         
         if A is None:
             np.random.seed(seed)
-            self.A = np.random.normal(loc=0, scale=0.4, size=(out_features, in_features))
+            self.A = Parameter(np.random.normal(loc=0, scale=0.4, size=(out_features, in_features)))
         if b is None:
-            self.b = np.zeros(out_features)
+            self.b = Parameter(np.zeros(out_features))
         
-        self._parameters = [self.A, self.b]
-
         # check shape         
-        if not self.A.shape[1] == in_features:
+        if not self.A.val.shape[1] == in_features:
             raise ValueError("row size of A should have same size as in_features")
         
-        if not self.b.shape[0] == out_features:
+        if not self.b.val.shape[0] == out_features:
             raise ValueError("b should have same size as out_features")
         
-        if not self.A.shape[0] == self.b.shape[0]:
+        if not self.A.val.shape[0] == self.b.val.shape[0]:
             raise ValueError("row size of A and b should have same size")
+
+        self.register_parameters([self.A, self.b])        
 
     def forward(self, x):
         """ Forward propagation
@@ -216,7 +217,7 @@ class Linear(Module):
         if x.ndim < 2:
             x = x[np.newaxis, :]
 
-        output = np.matmul(x, self.A.T) + self.b
+        output = np.matmul(x, self.A.val.T) + self.b.val
 
         return output
     
@@ -226,7 +227,7 @@ class Linear(Module):
         if np.array(x).ndim == 0 or np.array(x).ndim > 2:
             raise ValueError("x shape should be (in_features,) or (N, in_features)")
 
-        if not np.array(x).shape[-1] == self.A.shape[1]:
+        if not np.array(x).shape[-1] == self.A.val.shape[1]:
             raise ValueError("x shape should be (in_features,) or (N, in_features)")
 
 class BinaryCrossEntropyLossWithSigmoid(Module):
@@ -235,7 +236,7 @@ class BinaryCrossEntropyLossWithSigmoid(Module):
     def __init__(self):
         """
         """
-        super().__init__()
+        super(BinaryCrossEntropyLossWithSigmoid, self).__init__()
 
     def forward(self, x, target):
         """
@@ -263,7 +264,7 @@ class BinaryCrossEntropyLossWithSigmoid(Module):
         target = target[:, np.newaxis].astype(float)
 
         try:
-            with np.errstate(all='raise'): # FloatingPointErrorをraise
+            with np.errstate(all='raise'): # raise FloatingPointError
                 loss = target * np.log(1. + np.exp(-x)) + (1 - target) * np.log(1 + np.exp(x))
         except FloatingPointError:
                 loss = target * np.log(1. + np.exp(-x)) + (1 - target) * x
@@ -271,11 +272,6 @@ class BinaryCrossEntropyLossWithSigmoid(Module):
         output = np.sum(loss) / N
 
         return output
-    
-    def numercial_grad(self):
-        """
-        """
-        
 
     def _check_condition(self, x, target):
         """
@@ -297,19 +293,3 @@ class BinaryCrossEntropyLossWithSigmoid(Module):
 
         if (target > 1).any():
             raise ValueError("target should only have 1 or 0")
-
-if __name__ == "__main__":
-
-    D = 4
-    gnn = GNN(D)
-
-    x = [[0., 1., 0., 0.],
-         [1., 0., 1., 1.],
-         [0., 1., 0., 1.],
-         [0., 1., 1., 0.]]
-
-    T = 2
-
-    output = gnn(x, T)
-
-    print(output)

@@ -11,14 +11,14 @@ class TestVanillaGNN(unittest.TestCase):
         self.net = VanillaGNN()
 
     def test_initialize(self):
+        with patch.object(VanillaGNN, 'register_parameters', return_value=None):
+            with patch.object(GNN, '__init__', return_value=None) as mock_gnn:
+                VanillaGNN()
+                mock_gnn.assert_called_once()
 
-        with patch.object(GNN, '__init__', return_value=None) as mock_gnn:
-            VanillaGNN()
-            mock_gnn.assert_called_once()
-
-        with patch.object(Linear, '__init__', return_value=None) as mock_linear:
-            VanillaGNN()
-            mock_linear.assert_called_once()
+            with patch.object(Linear, '__init__', return_value=None) as mock_linear:
+                VanillaGNN()
+                mock_linear.assert_called_once()
 
     def test_forward(self):
         # compare with GNN --> Linear --> sigmoid and VanillaGNN.forward
@@ -30,12 +30,13 @@ class TestVanillaGNN(unittest.TestCase):
                     [0., 1., 1., 0.]] # non batch
             
         hg = self.net.fc1(input_1, 2)
-        s = self.net.fc2(hg)
-        p_test = sigmoid(s)
+        s_test = self.net.fc2(hg)
+        p_test = sigmoid(s_test)
         predict_test = p_test > 0.5
 
-        p, predict = self.net.forward(input_1)
+        p, predict, s = self.net.forward(input_1)
 
+        self.assertTrue((np.round(s, 5) == np.round(s_test, 5)).all())
         self.assertTrue((np.round(p, 5) == np.round(p_test, 5)).all())
         self.assertTrue(predict == predict_test)
 
@@ -48,14 +49,12 @@ class TestVanillaGNN(unittest.TestCase):
                     [0., 1., 0.]]] # batch
 
         hg = self.net.fc1(input_2, 2)
-        s = self.net.fc2(hg)
-        p_test = sigmoid(s)
+        s_test = self.net.fc2(hg)
+        p_test = sigmoid(s_test)
         predict_test = p_test > 0.5
 
-        p, predict = self.net.forward(input_2)
+        p, predict, s = self.net.forward(input_2)
 
+        self.assertTrue((np.round(s, 5) == np.round(s_test, 5)).all())
         self.assertTrue((np.round(p, 5) == np.round(p_test, 5)).all())
         self.assertTrue((predict == predict_test).all())
-
-
-

@@ -1,9 +1,10 @@
 import unittest
-from unittest.mock import MagicMock
+from unittest.mock import patch
 import numpy as np
 
 # original modules
 from src.common.NNbase import Module, Parameter
+from src.common.NNmodules import GNN
 
 # test Parameter
 class TestParameter(unittest.TestCase):
@@ -32,6 +33,22 @@ class TestModule(unittest.TestCase):
     def test_call(self): 
         test_input = [None]
 
-        self.module.forward = MagicMock(return_value="forward_propagation")
-        self.assertEqual(self.module(test_input), "forward_propagation")
-        self.module.forward.assert_called_once() # check once
+        with patch.object(Module, "forward", return_value=None) as test_forward:
+            self.module.forward(test_input)
+            test_forward.assert_called_once() # check once
+    
+    def test_register_parameters(self):
+
+        input_1 = 0.5 # float
+
+        with self.assertRaises(TypeError):
+            self.module.register_parameters(input_1)
+
+        input_2 = np.array([0.1]) # numpy.ndarray
+
+        with self.assertRaises(TypeError):
+            self.module.register_parameters(input_2)
+
+        input_3 = Parameter(np.zeros(5))
+        self.module.register_parameters(input_3)
+        self.assertTrue(id(input_3)==id(self.module.parameters['param_0']))        
