@@ -11,10 +11,11 @@ src/common/NNbase.py
 src/common/NNfunctions.py
 src/common/NNmodules.py
 src/common/NNoptim.py
+src/common/Nets.py
 src/common/__init__.py
-src/common/nets.py
 tests/__init__.py
 tests/common/__init__.py
 tests/common/test_NNbase.py
 tests/common/test_NNfunctions.py
 tests/common/test_NNmodules.py
+tests/common/test_Nets.py

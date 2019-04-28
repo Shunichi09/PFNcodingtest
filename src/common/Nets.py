@@ -2,7 +2,7 @@ import numpy as np
 
 # original modules
 from .NNfunctions import relu, sigmoid
-from .NNmodules import GNN, Linear, BinaryCrossEntropyLossWithSigmoid
+from .NNmodules import GNN, Linear
 
 class VanillaGNN():
     """ vanilla gnn
@@ -17,7 +17,7 @@ class VanillaGNN():
 
     See also
     -----------
-
+    GNN, Linear in NNmodules.py
     """
     def __init__(self):
         """
@@ -25,20 +25,17 @@ class VanillaGNN():
         self.layers = []
 
         # make network
-        D = 8
-        self.fc1 = GNN(D)
+        D = 7 # dimension of GNN
+        self.fc1 = GNN(D, seed=100)
         self.layers.append(self.fc1)
         self.fc2 = Linear(D, 1)
         self.layers.append(self.fc2)
 
-        # define loss func
-        self.loss_fn = BinaryCrossEntropyLossWithSigmoid()
-    
     def forward(self, x, T=2):
         """
         Parameters
         -------------
-        x : array-like, shape(N, in_features)
+        x : array-like, shape(N, in_features) or (in_features)
             ネットワークへの入力、グラフの構造
         T : int, optional
             aggregateする回数, default is 2
@@ -49,8 +46,6 @@ class VanillaGNN():
             predicted value, 予測確率
         predict : numpy.ndarray, shape(N, 1)
             predicted label, 予測ラベル（0 or 1）
-        loss : float
-            loss value, 損失関数の値
         """
         # to numpy
         x = np.array(x)
@@ -64,16 +59,5 @@ class VanillaGNN():
         # activation
         p = sigmoid(s)
         predict = p > 0.5
-
-        # loss
-        loss = self.loss_fn(s)
     
-        return p, predict, loss
-
-    def numercial_grad(self, output):
-        """
-
-        """
-        pass 
-
-        return None
+        return p, predict

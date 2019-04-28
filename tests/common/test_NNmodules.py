@@ -1,5 +1,4 @@
 import unittest
-from unittest.mock import patch, MagicMock, call
 import numpy as np
 
 # original modules
@@ -12,7 +11,7 @@ class TestGNN(unittest.TestCase):
         pass
         
     def test_initialize(self):
-        # weightのエラーがでるか
+        # check weight initialize
         with self.assertRaises(ValueError):
             D = 4
             W = np.ones((3, 3))
@@ -23,8 +22,7 @@ class TestGNN(unittest.TestCase):
         self.check_forward()
     
     def check_forward(self):
-        """値の計算があっているか
-        """
+        # check value
         # case input_1 with non batch
         D = 1
         W = np.ones((D, D)) * 1.5
@@ -33,7 +31,7 @@ class TestGNN(unittest.TestCase):
         input_1_1 = [[0., 1., 0., 0.],
                      [1., 0., 1., 1.],
                      [0., 1., 0., 1.],
-                     [0., 1., 1., 0.]] # non batch in numpy ndarray
+                     [0., 1., 1., 0.]] # non batch
         
         T = 1
         output = gnn(input_1_1, T)
@@ -98,8 +96,7 @@ class TestGNN(unittest.TestCase):
         self.assertTrue((np.round(output, 5) == np.array([[4.5, 0.], [ 1.5, 0.]])).all()) # value
 
     def check_condition_forward(self):
-        """入力の型があっているか
-        """
+        # check initialize
         D = 1
         T = 1
         gnn = GNN(D)
@@ -134,8 +131,6 @@ class TestLinear(unittest.TestCase):
         pass
 
     def test_initialize(self):
-        """
-        """
         # case 1
         in_features = 2
         out_features = 5
@@ -164,14 +159,10 @@ class TestLinear(unittest.TestCase):
             Linear(in_features, out_features, A, b)
     
     def test_forward(self):
-        """
-        """
         self.check_condition_forward()
         self.check_forward()
 
     def check_forward(self):
-        """
-        """
         # case 1 with non batch
         A = [[2., 1., 0.5]]
         b = [1.]
@@ -198,8 +189,6 @@ class TestLinear(unittest.TestCase):
         self.assertTrue((np.round(output, 5) ==  np.array([[6.25], [2.5]])).all()) # value
 
     def check_condition_forward(self):
-        """
-        """
         # case 3
         in_features = 3
         out_features = 2
@@ -229,19 +218,13 @@ class TestLinear(unittest.TestCase):
 # test CrossEntropyLoss
 class TestBinaryCrossEntropyLossWithSigmoid(unittest.TestCase):
     def setUp(self):
-        """
-        """
         self.loss_fn = BinaryCrossEntropyLossWithSigmoid()
 
     def test_forward(self):
-        """
-        """
         self.check_condition_forward()
         self.check_forward() 
 
     def check_forward(self):
-        """
-        """
         # case 1 with no batch
         input_1_1 = [3.]
         target_1_1 = [1]
@@ -297,8 +280,6 @@ class TestBinaryCrossEntropyLossWithSigmoid(unittest.TestCase):
         return output
 
     def check_condition_forward(self):
-        """
-        """
         # case 4
         input_4_1 = np.zeros((1, 4, 3))
         target_4_1 = [1, 0, 1, 0]

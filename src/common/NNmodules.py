@@ -40,18 +40,23 @@ class GNN(Module):
     >>> output.shape
     (2, 3) # N(batch_size) * D
     """
-    def __init__(self, D, W=None):
+    def __init__(self, D, W=None, seed=None):
         """
         Parameters
         -----------
         D : int
             size of dimention of the weights, 重みWの次元
+        W :  array-like, shape(D, D), optional
+            weights of graph, GNNの重み, default is None
+        seed : int, optional
+            seed of random state, default is None 
         """
         super().__init__()
 
         self.W = np.array(W)        
 
         if W is None:
+            np.random.seed(seed)
             self.W = np.random.normal(loc=0, scale=0.4, size=(D, D))
 
         self._paramaters = [self.W]
@@ -158,7 +163,7 @@ class Linear(Module):
     >>> output.shape
     (2, 1) # N(batch_size) * out_features
     """
-    def __init__(self, in_features, out_features, A=None, b=None):
+    def __init__(self, in_features, out_features, A=None, b=None, seed=None):
         """
         Parameters
         -----------
@@ -166,12 +171,19 @@ class Linear(Module):
             size of input
         out_features: int
             size of output
+        A : array-like, shape(in_features, out_features)
+            weights of the linear layer, default is None
+        b : array-like, shape(out_features, )
+            bias of the linear layer, default is None
+        seed : int, optional
+            seed of random state, default is None 
         """
         super().__init__()
         self.A = np.array(A)
         self.b = np.array(b)
         
         if A is None:
+            np.random.seed(seed)
             self.A = np.random.normal(loc=0, scale=0.4, size=(out_features, in_features))
         if b is None:
             self.b = np.zeros(out_features)
@@ -259,6 +271,11 @@ class BinaryCrossEntropyLossWithSigmoid(Module):
         output = np.sum(loss) / N
 
         return output
+    
+    def numercial_grad(self):
+        """
+        """
+        
 
     def _check_condition(self, x, target):
         """
