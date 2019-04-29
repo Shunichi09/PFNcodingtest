@@ -1,4 +1,5 @@
 import numpy as np
+from collections import OrderedDict
 
 # original
 from .NNbase import Parameter
@@ -7,14 +8,27 @@ def calc_numerical_gradient(f, x):
     """
     Parameters
     ------------
+    f : function
+        forward function of NN
+    x : numpy.ndarray
+        input
+    
+    Returns
+    ---------
+    grad : numpy.ndarray, shape is the same as x
+        results of numercial gradient of the input
 
     References
     -----------
     - oreilly japan 0 から作るdeeplearning
     https://github.com/oreilly-japan/deep-learning-from-scratch/blob/master/common/gradient.py
     """
+
+    print(callable(f))
+
     h = 1e-4 # 0.0001
     grad = np.zeros_like(x)
+
     
     it = np.nditer(x, flags=['multi_index'], op_flags=['readwrite'])
     while not it.finished:
@@ -41,11 +55,24 @@ def numercial_grad(parameters, forward_fn):
     forward_fn : function
     loss_fn : function
     """
-    for param in parameters:
-        print("name = {}".format(param.key()))
+    for name, param in parameters.items():
+        grad = calc_numerical_gradient(forward_fn, param.val)
+        param.grad = grad.copy()
 
+def main():
+    test_w = np.array([[1., 1.], [1.5, 1.5]])
+    test_w = Parameter(test_w)
 
+    parameters = OrderedDict()
+    parameters['test_1'] = test_w
+
+    def test_fn(a, b):
+        return np.sum(a * test_w.val + b)
+
+    def forward_fn(test_w):
+        return test_fn(2, 4)
+
+    numercial_grad(parameters, forward_fn)
 
 if __name__ == "__main__":
-    
-
+    main()
