@@ -2,7 +2,7 @@ import numpy as np
 from collections import OrderedDict
 
 # original
-from .NNbase import Parameter
+from .NNbases import Parameter
 
 def calc_numerical_gradient(f, x):
     """
@@ -58,6 +58,12 @@ def numerical_gradient(parameters, forward_fn):
     forward_fn : function
         function of NN's forward
     """
+    if not isinstance(parameters, OrderedDict):
+        raise TypeError("parameters should be OrderedDict of Parameter class")
+
+    if not callable(forward_fn):
+        raise TypeError("foward_fn should be callable")
+
     for _, param in parameters.items():
         grad = calc_numerical_gradient(forward_fn, param.val)
         param.grad = grad.copy()

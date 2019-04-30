@@ -4,13 +4,13 @@ import matplotlib.pyplot as plt
 # original modules
 from .common.NNfunctions import relu, sigmoid
 from .common.NNmodules import GNN, Linear, BinaryCrossEntropyLossWithSigmoid
-from .common.NNgrad import numerical_gradient
-from .common.NNoptim import SGD
+from .common.NNgrads import numerical_gradient
+from .common.NNoptims import SGD
 from .Nets import VanillaGNN
 
 def main():
     # network
-    net = VanillaGNN(seed=None)
+    net = VanillaGNN(seed=15)
 
     # input data
     G = np.array([[0., 1., 0., 0., 0., 1., 1., 0., 1., 1.],
@@ -57,12 +57,12 @@ def main():
         _, predicted, _ = net.forward(G)
         loss = foward_with_loss(G, t)
 
-        print("epoch : {} loss : {} predicted : {}".format(epoch, round(loss,3), predicted[0][0]))
+        print("epoch : {} loss : {} predicted : {}".format(epoch + 1, round(loss,3), predicted[0][0]))
         
         # save
         history_loss.append(loss)
     
-    # show
+    # fig show
     fig = plt.figure()
     axis = fig.add_subplot(111)
     axis.plot(np.arange(EPOCHS), history_loss)
@@ -71,7 +71,7 @@ def main():
     axis.set_ylabel("loss")
 
     fig.savefig("./src/results/main_2_result.png")
-    # plt.show()
+    plt.show()
 
 if __name__ == "__main__":
     main()

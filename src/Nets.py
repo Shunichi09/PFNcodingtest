@@ -1,7 +1,7 @@
 import numpy as np
 
 # original modules
-from .common.NNbase import Module
+from .common.NNbases import Module
 from .common.NNfunctions import relu, sigmoid
 from .common.NNmodules import GNN, Linear, BinaryCrossEntropyLossWithSigmoid
 

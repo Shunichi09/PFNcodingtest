@@ -1,6 +1,6 @@
 import numpy as np
 from collections import OrderedDict
-from .NNbase import Parameter
+from .NNbases import Parameter
 
 class Optimizer():
     """
@@ -42,10 +42,10 @@ class SGD(Optimizer):
 
         # check condition
         if not isinstance(alpha, float):
-            raise ValueError("alpha should be positive float")
+            raise TypeError("alpha should be positive value and float")
 
-        if alpha < 0.:
-            raise ValueError("alpha should be positive float")
+        if alpha <= 0.:
+            raise ValueError("alpha should be positive value")
 
         self.alpha = alpha
 
@@ -68,6 +68,20 @@ class MomentumSGD(Optimizer):
             momentum rate, default is 0.9
         """
         super(MomentumSGD, self).__init__(param)
+
+        # check condition
+        if not isinstance(alpha, float):
+            raise TypeError("alpha should be positive value and float")
+
+        if alpha <= 0.:
+            raise ValueError("alpha should be positive value")
+
+        if not isinstance(beta, float):
+            raise TypeError("beta should be positive value and float")
+
+        if beta <= 0.:
+            raise ValueError("beta should be positive value")
+
         self.alpha = alpha
         self.beta = beta
         self.pre_param = None
@@ -80,7 +94,7 @@ class MomentumSGD(Optimizer):
             self.pre_param = OrderedDict()
             for key, param in self.parameters.items():
                 self.pre_param[key] = Parameter(np.zeros_like(param.val))
-                self.pre_param[key].grad = param.grad.copy()
+                self.pre_param[key].grad = np.zeros_like(param.grad)
 
         # update
         for key, param in self.parameters.items():
@@ -92,4 +106,3 @@ class Adam(Optimizer):
         """
         """
         pass
-

@@ -7,12 +7,18 @@ from src.common.NNmodules import GNN, Linear, BinaryCrossEntropyLossWithSigmoid
 
 # test GNN
 class TestGNN(unittest.TestCase):
+    """
+    Notes
+    --------
+    this test class is for 課題1
+    """
     def setUp(self):
         pass
         
     def test_initialize(self):
         # check weight initialize
-        with self.assertRaises(ValueError):
+        # test for mismatch D and W dimention
+        with self.assertRaises(ValueError): 
             D = 4
             W = np.ones((3, 3))
             GNN(D, W)
@@ -256,8 +262,8 @@ class TestBinaryCrossEntropyLossWithSigmoid(unittest.TestCase):
         loss = self.loss_fn(input_1_1, target_1_1)
         loss_test = self._other_loss_forward(input_1_1, target_1_1)
 
-        self.assertTrue(np.round(loss, 5) == np.round(loss_test, 5))
-        self.assertTrue(np.round(loss, 5) == np.round(0.0485873, 5))
+        self.assertTrue(np.round(loss, 5) == np.round(loss_test, 5)) # checking with other forward
+        self.assertTrue(np.round(loss, 5) == np.round(0.0485873, 5)) # checking with hand calculation
         
         # test for batch
         input_2_1 = [[3.], [7.], [1.]] 
@@ -265,8 +271,8 @@ class TestBinaryCrossEntropyLossWithSigmoid(unittest.TestCase):
         loss = self.loss_fn(input_2_1, target_2_1)
         loss_test = self._other_loss_forward(input_2_1, target_2_1)
 
-        self.assertTrue(np.round(loss, 5) == np.round(loss_test, 5))
-        self.assertTrue(np.round(loss, 5) == np.round(2.787586, 5))
+        self.assertTrue(np.round(loss, 5) == np.round(loss_test, 5)) # checking with other forward
+        self.assertTrue(np.round(loss, 5) == np.round(2.787586, 5)) # checking with hand calculation
         
         # test for over flow
         input_3_1 = [1.e5]

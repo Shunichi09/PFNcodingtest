@@ -1,7 +1,7 @@
 from setuptools import find_packages
 from setuptools import setup
 
-install_requires = ['numpy', 'matplotlib']
+install_requires = ['numpy>1.16.0', 'matplotlib>3.0.0']
 
 setup(
     name='pfn_coding_test',

@@ -3,7 +3,7 @@ from unittest.mock import patch
 import numpy as np
 
 # original modules
-from src.common.NNbase import Module, Parameter
+from src.common.NNbases import Module, Parameter
 from src.common.NNmodules import GNN
 
 # test Parameter

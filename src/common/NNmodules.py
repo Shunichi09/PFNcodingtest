@@ -3,7 +3,7 @@ import numpy as np
 
 # original modules
 from .NNfunctions import sigmoid, relu
-from .NNbase import Parameter, Module
+from .NNbases import Parameter, Module
 
 class GNN(Module):
     """graph neural network
