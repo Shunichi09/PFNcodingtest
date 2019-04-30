@@ -74,18 +74,19 @@ class GNN(Module):
         Parameters
         --------------
         x : array-like, shape(num_nodes, num_nodes) or (batch_size, num_nodes, num_nodes)
-            グラフの隣接行列、グラフのノード数×グラフのノード数の対称行列
+            Adjacency matrix of the graph
         T : int
-            aggregateする回数
+            times of aggregating
 
         Returns
         ------------
         output : numpy.ndarray, shape(1, D) or shape(batch_size, D)
-            xが2次元の場合、batch_sizeを1としてoutputを返します
+            output of layer
         
         Notes
         --------
         - xがbatchを持つ、3dの場合、0埋めでpaddingを行い、計算
+        - xがbatchを持たない2dの場合、batch_sizeを1としてoutputを返します
         """
         self._check_condition(x, T)
 
@@ -153,7 +154,7 @@ class Linear(Module):
     >>> output = linear(inputs)
     >>> linear.A, linear.b
     A
-    [[-0.27587793  0.07364357 -0.44339573]]
+    [[-0.27587793],  [0.07364357], [-0.44339573]]
     b
     [0.]
     >>> output
@@ -189,7 +190,7 @@ class Linear(Module):
         
         if A is None:
             np.random.seed(seed)
-            self.A = Parameter(np.random.normal(loc=0, scale=0.4, size=(in_features, out_features)))
+            self.A = Parameter(np.random.normal(loc=0., scale=0.4, size=(in_features, out_features)))
         if b is None:
             self.b = Parameter(np.zeros(out_features))
         
@@ -236,6 +237,14 @@ class Linear(Module):
 
 class BinaryCrossEntropyLossWithSigmoid(Module):
     """ Cross entropy loss function
+
+    Examples
+    ---------
+    >>> loss_fn = BinaryCrossEntropyLossWithSigmoid
+    >>> x = [[3.], [7.], [1.]] 
+    >>> t = [1., 0., 0.]
+    >>> loss_fn(x, t)
+    2.7875
     """
     def __init__(self):
         """
@@ -247,14 +256,14 @@ class BinaryCrossEntropyLossWithSigmoid(Module):
         Parameters
         -------------
         x : array-like, shape(in_feartures) or (N, in_features)
-            output of NN, NNの出力
+            output of NN
         target : array-like, shape(N)
-            target of data, 教師信号
+            target of data,
         
         Returns
         ------------
         output : float
-            loss value, 評価関数の値(バッチサイズで平均をとったもの)     
+            loss value, this value is divided by batch size     
         """
         self._check_condition(x, target)
 
@@ -286,8 +295,8 @@ class BinaryCrossEntropyLossWithSigmoid(Module):
         if x.ndim > 2:
             raise ValueError("x should have 1d or 2d")
         
-        if target.ndim > 1:
-            raise ValueError("target should have 1d")
+        if target.ndim > 1 or isinstance(target, float) or isinstance(target, int):
+            raise ValueError("target should have 1d of array-like")
 
         if x.ndim < 2:
             x = x[np.newaxis, :]

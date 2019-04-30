@@ -53,10 +53,10 @@ def numerical_gradient(parameters, forward_fn):
     """ calculated the gradients of parameters, the gradients are placed in each Parameter class
     Parameters
     -------------
-    parameters : Orderedict
-        dictionary of Parameter class
+    parameters : OrderedDict
+        Ordered dictionary of Parameter class
     forward_fn : function
-    loss_fn : function
+        function of NN's forward
     """
     for _, param in parameters.items():
         grad = calc_numerical_gradient(forward_fn, param.val)

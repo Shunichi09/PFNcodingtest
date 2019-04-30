@@ -1,71 +1,77 @@
 import numpy as np
-
-import numpy as np
+import matplotlib.pyplot as plt
 
 # original modules
-from .common.NNbase import Module
 from .common.NNfunctions import relu, sigmoid
-from .common.NNmodules import GNN, Linear
+from .common.NNmodules import GNN, Linear, BinaryCrossEntropyLossWithSigmoid
+from .common.NNgrad import numerical_gradient
+from .common.NNoptim import SGD
+from .Nets import VanillaGNN
 
-class VanillaGNN(Module):
-    """ vanilla gnn
-    Attributes
-    ------------
-    layers : list
-        list of layers
-    fc1 : GNN class
-        1st layer
-    fc2 : Linear class
-        2nd layer
+def main():
+    # network
+    net = VanillaGNN(seed=None)
 
-    See also
-    -----------
-    GNN, Linear in NNmodules.py
-    """
-    def __init__(self):
-        """
-        """
-        super(VanillaGNN, self).__init__()
-        self.layers = []
-
-        # make network
-        D = 8 # dimension of GNN
-        self.fc1 = GNN(D)
-        self.layers.append(self.fc1)
-        self.fc2 = Linear(D, 1)
-        self.layers.append(self.fc2)
-
-        self.register_parameters(self.layers)
-        
-    def forward(self, x, T=2):
-        """
-        Parameters
-        -------------
-        x : array-like, shape(N, in_features) or (in_features)
-            input of NN, ネットワークへの入力、グラフの構造
-        T : int, optional
-            times of aggregate, default is 2
-
-        Returns
-        ----------
-        p : numpy.ndarray, shape(N, 1)
-            predicted value, 予測確率
-        predict : numpy.ndarray, shape(N, 1)
-            predicted label, 予測ラベル（0 or 1）
-        s : numpy.ndarray, shape(N, 1)
-            state before the activation layer
-        """
-        # to numpy
-        x = np.array(x)
-
-        # first(GNN)
-        hg = self.fc1(x, T)
-
-        # second(Linear)
-        s = self.fc2(hg)
-
-        # activation
-        p = sigmoid(s)
-        predict = p > 0.5
+    # input data
+    G = np.array([[0., 1., 0., 0., 0., 1., 1., 0., 1., 1.],
+                  [1., 0., 1., 1., 0., 0., 1., 1., 1., 0.],
+                  [0., 1., 0., 1., 0., 1., 0., 1., 0., 1.],
+                  [0., 1., 1., 0., 0., 1., 1., 0., 0., 1.],
+                  [0., 0., 0., 0., 0., 0., 1., 0., 1., 1.], 
+                  [1., 0., 1., 1., 0., 0., 0., 1., 1., 1.], 
+                  [1., 1., 0., 1., 1., 0., 0., 0., 1., 1.], 
+                  [0., 1., 1., 0., 0., 1., 0., 0., 1., 1.], 
+                  [1., 1., 0., 0., 1., 1., 1., 1., 0., 1.],
+                  [1., 0., 1., 1., 1., 1., 1., 1., 1., 0.]])
     
-        return p, predict, s
+    t = [1] # target
+
+    # test
+    assert (G == G.T).all(), "input data should be a Symmetric matrix"
+    assert (np.diag(G) == np.zeros(G.shape[0])).all()
+
+    # loss func
+    loss_fn = BinaryCrossEntropyLossWithSigmoid()
+
+    # optimizer
+    optimizer = SGD(net.parameters, alpha=0.0001)
+
+    # training parameters
+    EPOCHS = 100
+    history_loss = []
+
+    # for numerical grad
+    def foward_with_loss(G, t):
+        _, _, s = net.forward(G)
+        loss = loss_fn(s, t)
+        return loss
+    
+    grad_fn = lambda param : foward_with_loss(G, t)
+
+    for epoch in range(EPOCHS):
+        # calc grad
+        numerical_gradient(net.parameters, grad_fn)
+        optimizer.step()
+
+        # calc loss
+        _, predicted, _ = net.forward(G)
+        loss = foward_with_loss(G, t)
+
+        print("epoch : {} loss : {} predicted : {}".format(epoch, round(loss,3), predicted[0][0]))
+        
+        # save
+        history_loss.append(loss)
+    
+    # show
+    fig = plt.figure()
+    axis = fig.add_subplot(111)
+    axis.plot(np.arange(EPOCHS), history_loss)
+
+    axis.set_xlabel("epoch")
+    axis.set_ylabel("loss")
+
+    fig.savefig("./src/results/main_2_result.png")
+    # plt.show()
+
+if __name__ == "__main__":
+    main()
