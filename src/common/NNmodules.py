@@ -70,7 +70,7 @@ class GNN(Module):
         self.register_parameters(self.W)
     
     def forward(self, x, T):
-        """ Forward propagation, xが3dの場合、0埋めでpaddingを行い、計算します
+        """ Forward propagation
         Parameters
         --------------
         x : array-like, shape(num_nodes, num_nodes) or (batch_size, num_nodes, num_nodes)
@@ -82,6 +82,10 @@ class GNN(Module):
         ------------
         output : numpy.ndarray, shape(1, D) or shape(batch_size, D)
             xが2次元の場合、batch_sizeを1としてoutputを返します
+        
+        Notes
+        --------
+        - xがbatchを持つ、3dの場合、0埋めでpaddingを行い、計算
         """
         self._check_condition(x, T)
 
@@ -129,7 +133,7 @@ class GNN(Module):
                 raise ValueError("x shape should be 2dim or 3dim")
 
 class Linear(Module):
-    """ Linear layer, y = Ax + b
+    """ Linear layer, y = xA + b
     Attributes
     -----------
     A : Parameter class, shape(in_features, out_features)
@@ -185,18 +189,18 @@ class Linear(Module):
         
         if A is None:
             np.random.seed(seed)
-            self.A = Parameter(np.random.normal(loc=0, scale=0.4, size=(out_features, in_features)))
+            self.A = Parameter(np.random.normal(loc=0, scale=0.4, size=(in_features, out_features)))
         if b is None:
             self.b = Parameter(np.zeros(out_features))
         
         # check shape         
-        if not self.A.val.shape[1] == in_features:
+        if not self.A.val.shape[0] == in_features:
             raise ValueError("row size of A should have same size as in_features")
         
         if not self.b.val.shape[0] == out_features:
             raise ValueError("b should have same size as out_features")
         
-        if not self.A.val.shape[0] == self.b.val.shape[0]:
+        if not self.A.val.shape[1] == self.b.val.shape[0]:
             raise ValueError("row size of A and b should have same size")
 
         self.register_parameters([self.A, self.b])        
@@ -217,7 +221,7 @@ class Linear(Module):
         if x.ndim < 2:
             x = x[np.newaxis, :]
 
-        output = np.matmul(x, self.A.val.T) + self.b.val
+        output = np.matmul(x, self.A.val) + self.b.val
 
         return output
     
@@ -227,7 +231,7 @@ class Linear(Module):
         if np.array(x).ndim == 0 or np.array(x).ndim > 2:
             raise ValueError("x shape should be (in_features,) or (N, in_features)")
 
-        if not np.array(x).shape[-1] == self.A.val.shape[1]:
+        if not np.array(x).shape[-1] == self.A.val.shape[0]:
             raise ValueError("x shape should be (in_features,) or (N, in_features)")
 
 class BinaryCrossEntropyLossWithSigmoid(Module):

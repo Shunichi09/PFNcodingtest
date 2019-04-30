@@ -2,7 +2,7 @@ import unittest
 from unittest.mock import MagicMock, patch
 import numpy as np
 
-from src.common.Nets import VanillaGNN
+from src.main_2 import VanillaGNN
 from src.common.NNmodules import GNN, Linear
 from src.common.NNfunctions import sigmoid
 

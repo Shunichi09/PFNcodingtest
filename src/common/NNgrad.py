@@ -23,12 +23,15 @@ def calc_numerical_gradient(f, x):
     - oreilly japan 0 から作るdeeplearning
     https://github.com/oreilly-japan/deep-learning-from-scratch/blob/master/common/gradient.py
     """
+    # check condition
+    if not callable(f):
+        raise TypeError("f should be callable")
 
-    print(callable(f))
+    if not (isinstance(x, list) or isinstance(x, np.ndarray)):
+        raise TypeError("x should be array-like")
 
     h = 1e-4 # 0.0001
     grad = np.zeros_like(x)
-
     
     it = np.nditer(x, flags=['multi_index'], op_flags=['readwrite'])
     while not it.finished:
@@ -44,9 +47,9 @@ def calc_numerical_gradient(f, x):
         x[idx] = tmp_val
         it.iternext()   
         
-    return grad
+    return np.array(grad)
 
-def numercial_grad(parameters, forward_fn):
+def numerical_gradient(parameters, forward_fn):
     """ calculated the gradients of parameters, the gradients are placed in each Parameter class
     Parameters
     -------------
@@ -55,24 +58,6 @@ def numercial_grad(parameters, forward_fn):
     forward_fn : function
     loss_fn : function
     """
-    for name, param in parameters.items():
+    for _, param in parameters.items():
         grad = calc_numerical_gradient(forward_fn, param.val)
         param.grad = grad.copy()
-
-def main():
-    test_w = np.array([[1., 1.], [1.5, 1.5]])
-    test_w = Parameter(test_w)
-
-    parameters = OrderedDict()
-    parameters['test_1'] = test_w
-
-    def test_fn(a, b):
-        return np.sum(a * test_w.val + b)
-
-    def forward_fn(test_w):
-        return test_fn(2, 4)
-
-    numercial_grad(parameters, forward_fn)
-
-if __name__ == "__main__":
-    main()

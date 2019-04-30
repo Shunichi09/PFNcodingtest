@@ -11,6 +11,9 @@ def sigmoid(x):
     ---------
     output : numpy.ndarray, shape is the same as x
     """
+    # check condition
+    if not (isinstance(x, list) or isinstance(x, np.ndarray) or isinstance(x, float)):
+        raise TypeError("x should be array-like or float")
 
     x = np.array(x)
 
@@ -28,6 +31,10 @@ def relu(x):
     ---------
     output : numpy.ndarray, shape is the same as x
     """
+    # check condition
+    if not (isinstance(x, list) or isinstance(x, np.ndarray) or isinstance(x, float)):
+        raise TypeError("x should be array-like or float")
+
     x = np.array(x)
 
     output = x.copy()
@@ -38,8 +45,10 @@ def relu(x):
 
 if __name__ == "__main__":
     x = np.arange(-6, 6, 0.1)
-    y = sigmoid(x)
-    y = relu(x)
+    y1 = sigmoid(x)
+    y2 = relu(x)
 
-    plt.plot(x, y)
+    plt.plot(x, y1)
+    plt.plot(x, y2)
+
     plt.show()

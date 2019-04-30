@@ -23,7 +23,7 @@ class TestGNN(unittest.TestCase):
     
     def check_forward(self):
         # check value
-        # case input_1 with non batch
+        # test for non batch
         D = 1
         W = np.ones((D, D)) * 1.5
         gnn = GNN(D, W)
@@ -54,7 +54,7 @@ class TestGNN(unittest.TestCase):
         output = gnn(input_1_2, T)
         self.assertTrue((np.round(output, 5) ==  np.array([[40.5]])).all()) # value
 
-        # case input_2 with batch
+        # test for with batch
         D = 2
         batch_size = 2
         W = np.array([[0.5, -1.],
@@ -101,17 +101,17 @@ class TestGNN(unittest.TestCase):
         T = 1
         gnn = GNN(D)
 
-        # case input_3
+        # test for input of type
         input_3 = 0. # float
 
         with self.assertRaises(TypeError):
             gnn(input_3, T)
 
-        # case input_4
-        input_4_1 = [[[[0.]]]] # too many dim    
-        input_4_2 = np.zeros((4, 3, 2, 1)) # too many dim in numpy.ndarray
-        input_4_3 = [0.] # less dim 
-        input_4_4 = np.array([0.]) # less dim in numpy.ndarray
+        # test for input of shape
+        input_4_1 = [[[[0.]]]] # test for too many dim    
+        input_4_2 = np.zeros((4, 3, 2, 1)) # test for too many dim in numpy.ndarray
+        input_4_3 = [0.] # test for less dim 
+        input_4_4 = np.array([0.]) # test for less dim in numpy.ndarray
 
         with self.assertRaises(ValueError):
             gnn(input_4_1, T)
@@ -131,16 +131,7 @@ class TestLinear(unittest.TestCase):
         pass
 
     def test_initialize(self):
-        # case 1
-        in_features = 2
-        out_features = 5
-        A = np.zeros((2, 3))
-        b = np.zeros(3)
-        
-        with self.assertRaises(ValueError):
-            Linear(in_features, out_features, A, b)
-        
-        # case 2
+        # test for dim mismatch between A and in features
         in_features = 1
         out_features = 2
         A = np.zeros((2, 1))
@@ -149,10 +140,19 @@ class TestLinear(unittest.TestCase):
         with self.assertRaises(ValueError):
             Linear(in_features, out_features, A, b)
 
-        # case 3
+        # test for dim mismatch between b and out features
+        in_features = 2
+        out_features = 5
+        A = np.zeros((2, 3))
+        b = np.zeros(3)
+        
+        with self.assertRaises(ValueError):
+            Linear(in_features, out_features, A, b)
+                
+        # test for dim mismatch between A and b
         in_features = 3
         out_features = 2
-        A = np.zeros((1, 3))
+        A = np.zeros((3, 3))
         b = np.zeros(2)
         
         with self.assertRaises(ValueError):
@@ -162,9 +162,36 @@ class TestLinear(unittest.TestCase):
         self.check_condition_forward()
         self.check_forward()
 
+    def check_condition_forward(self):
+        # test for wrong dim of input
+        in_features = 3  
+        out_features = 2
+        
+        input_1_1 = 0.
+        input_1_2 = np.zeros((3, 3, 4))
+
+        linear = Linear(in_features, out_features)
+        
+        with self.assertRaises(ValueError):
+            linear(input_1_1)
+
+        with self.assertRaises(ValueError):
+            linear(input_1_2)
+
+        # test for dim mismatch between in_features and input
+        in_features = 4 
+        out_features = 2
+        
+        input_2_1 = np.zeros((5, 3))
+
+        linear = Linear(in_features, out_features)
+        
+        with self.assertRaises(ValueError):
+            linear(input_2_1)
+
     def check_forward(self):
-        # case 1 with non batch
-        A = [[2., 1., 0.5]]
+        # test for non batch
+        A = [[2.], [1.], [0.5]]
         b = [1.]
         
         in_features = 3
@@ -178,8 +205,7 @@ class TestLinear(unittest.TestCase):
         self.assertTrue(output.shape == (1, out_features)) # shape
         self.assertTrue((np.round(output, 5) ==  np.array([[6.25]])).all()) # value
         
-
-        # case 2 with batch
+        # test for batch
         input_2 = [[2., 1., 0.5],
                    [1., 0., -1.]] # batch
         
@@ -188,32 +214,6 @@ class TestLinear(unittest.TestCase):
         self.assertTrue(output.shape == (batch_size, out_features)) # shape
         self.assertTrue((np.round(output, 5) ==  np.array([[6.25], [2.5]])).all()) # value
 
-    def check_condition_forward(self):
-        # case 3
-        in_features = 3
-        out_features = 2
-        
-        input_3_1 = 0.
-        input_3_2 = np.zeros((3, 3, 4))
-
-        linear = Linear(in_features, out_features)
-        
-        with self.assertRaises(ValueError):
-            linear(input_3_1)
-
-        with self.assertRaises(ValueError):
-            linear(input_3_2)
-
-        # case 4
-        in_features = 4
-        out_features = 2
-        
-        input_4_1 = np.zeros((5, 3))
-
-        linear = Linear(in_features, out_features)
-        
-        with self.assertRaises(ValueError):
-            linear(input_4_1)
 
 # test CrossEntropyLoss
 class TestBinaryCrossEntropyLossWithSigmoid(unittest.TestCase):
@@ -224,9 +224,34 @@ class TestBinaryCrossEntropyLossWithSigmoid(unittest.TestCase):
         self.check_condition_forward()
         self.check_forward() 
 
+    def check_condition_forward(self):
+        # test for 3 dim of input
+        input_1_1 = np.zeros((1, 4, 3)) 
+        target_1_1 = [1, 0, 1, 0]
+        with self.assertRaises(ValueError):
+            self.loss_fn(input_1_1, target_1_1)
+
+        # test for 2 dim of target
+        input_2_1 = np.zeros((4, 3)) 
+        target_2_1 = np.array([[1, 0, 1, 0]])
+        with self.assertRaises(ValueError):
+            self.loss_fn(input_2_1, target_2_1)
+
+        # test for dim mismatch between input and target
+        input_3_1 = np.zeros((4, 3)) 
+        target_3_1 = np.array([[1, 0, 1]])
+        with self.assertRaises(ValueError):
+            self.loss_fn(input_3_1, target_3_1)
+        
+        # test for wrong value in target(binary)
+        input_4_1 = np.zeros((4, 3)) 
+        target_4_1 = np.array([[4, 0, 1]])
+        with self.assertRaises(ValueError):
+            self.loss_fn(input_4_1, target_4_1)
+
     def check_forward(self):
-        # case 1 with no batch
-        input_1_1 = [3.]
+        # test for non batch
+        input_1_1 = [3.] 
         target_1_1 = [1]
         loss = self.loss_fn(input_1_1, target_1_1)
         loss_test = self._other_loss_forward(input_1_1, target_1_1)
@@ -234,8 +259,8 @@ class TestBinaryCrossEntropyLossWithSigmoid(unittest.TestCase):
         self.assertTrue(np.round(loss, 5) == np.round(loss_test, 5))
         self.assertTrue(np.round(loss, 5) == np.round(0.0485873, 5))
         
-        # case 2 with batch
-        input_2_1 = [[3.], [7.], [1.]]
+        # test for batch
+        input_2_1 = [[3.], [7.], [1.]] 
         target_2_1 = [1, 0, 0]
         loss = self.loss_fn(input_2_1, target_2_1)
         loss_test = self._other_loss_forward(input_2_1, target_2_1)
@@ -243,27 +268,27 @@ class TestBinaryCrossEntropyLossWithSigmoid(unittest.TestCase):
         self.assertTrue(np.round(loss, 5) == np.round(loss_test, 5))
         self.assertTrue(np.round(loss, 5) == np.round(2.787586, 5))
         
-        # case 3 over flow
+        # test for over flow
         input_3_1 = [1.e5]
         target_3_1 = [0]
         loss = self.loss_fn(input_3_1, target_3_1)
 
-        with self.assertRaises(FloatingPointError): # over flow check
+        with self.assertRaises(FloatingPointError): # test for over flow check of other method
             loss_test = self._other_loss_forward(input_3_1, target_3_1)
 
-        self.assertTrue(np.round(loss, 5) == np.round(1.e5, 5))
+        self.assertTrue(np.round(loss, 5) == np.round(1.e5, 5)) # test for being able to calculate the approximate loss
 
     def _other_loss_forward(self, x, target):
-        """別の方法でのbinary cross entropy lossを算出
-        sigmoid --> binary cross entropy loss
+        """sigmoid --> binary cross entropy loss
+        Notes
+        ------
+        - sigmoidを通して通常のbinary cross entropy lossを算出しています
         """
         x = np.array(x)
         target = np.array(target)
         N = target.shape[0]
 
         x = sigmoid(x)
-
-        # print("x = \n {}".format(x))
 
         if x.ndim < 2:
             x = x[np.newaxis, :].astype(float)
@@ -275,31 +300,4 @@ class TestBinaryCrossEntropyLossWithSigmoid(unittest.TestCase):
 
         output = np.sum(loss) / N
 
-        # print("output = {}".format(output))
-        
         return output
-
-    def check_condition_forward(self):
-        # case 4
-        input_4_1 = np.zeros((1, 4, 3))
-        target_4_1 = [1, 0, 1, 0]
-        with self.assertRaises(ValueError):
-            self.loss_fn(input_4_1, target_4_1)
-        
-        # case 5
-        input_5_1 = np.zeros((4, 3))
-        target_5_1 = np.array([[1, 0, 1, 0]])
-        with self.assertRaises(ValueError):
-            self.loss_fn(input_5_1, target_5_1)
-
-        # case 6
-        input_6_1 = np.zeros((4, 3))
-        target_6_1 = np.array([[1, 0, 1]])
-        with self.assertRaises(ValueError):
-            self.loss_fn(input_6_1, target_6_1)
-
-        # case 7
-        input_7_1 = np.zeros((4, 3))
-        target_7_1 = np.array([[4, 0, 1]])
-        with self.assertRaises(ValueError):
-            self.loss_fn(input_7_1, target_7_1)

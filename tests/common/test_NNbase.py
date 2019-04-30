@@ -26,16 +26,16 @@ class TestModule(unittest.TestCase):
         self.module = Module()
 
     def test_forward(self):
-        test_input = [None]
+        input_1 = [None]
         with self.assertRaises(NotImplementedError):
-            self.module.forward(test_input)
+            self.module.forward(input_1)
 
     def test_call(self): 
-        test_input = [None]
+        input_1 = [None]
 
-        with patch.object(Module, "forward", return_value=None) as test_forward:
-            self.module.forward(test_input)
-            test_forward.assert_called_once() # check once
+        with patch.object(Module, "forward", return_value=None) as mock_forward:
+            self.module.forward(input_1)
+            mock_forward.assert_called_once() # check once
     
     def test_register_parameters(self):
 
