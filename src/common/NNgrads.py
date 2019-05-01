@@ -30,7 +30,7 @@ def calc_numerical_gradient(f, x):
     if not (isinstance(x, list) or isinstance(x, np.ndarray)):
         raise TypeError("x should be array-like")
 
-    h = 1e-4 # 0.0001
+    h = 1e-3 # 0.001
     grad = np.zeros_like(x)
     
     it = np.nditer(x, flags=['multi_index'], op_flags=['readwrite'])

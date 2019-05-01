@@ -306,3 +306,145 @@ class BinaryCrossEntropyLossWithSigmoid(Module):
 
         if (target > 1).any():
             raise ValueError("target should only have 1 or 0")
+
+
+class ExtendedGNN(Module):
+    """graph neural network with MLPs
+
+    Attributes
+    -------------
+    W : Parameter class, shape(D, D)
+        weights of graph, GNNの重み
+    
+    
+    See also
+    ------------
+    Parameter in NNbase.py
+    Module in NNbase.py
+    """
+    def __init__(self, D, W1=None, W2=None, b1=None, b2=None, seed=None):
+        """
+        Parameters
+        -----------
+        D : int
+            size of dimention of the weights, 重みWの次元
+        W :  array-like, shape(D, D), optional
+            weights of graph, GNNの重み, default is None
+        seed : int, optional
+            seed of random state, default is None 
+        """
+        super(ExtendedGNN, self).__init__()
+
+        self.W1 = Parameter(np.array(W1))
+        self.W2 = Parameter(np.array(W2))
+        self.b1 = Parameter(np.array(b1))
+        self.b2 = Parameter(np.array(b2))
+
+        if W1 is None:
+            np.random.seed(seed)
+            self.W1 = Parameter(np.random.normal(loc=0, scale=0.4, size=(D, D)))
+        
+        if self.W1.val.shape != (D, D):
+            raise ValueError("dimention of weight and dimesion are not equal")
+
+        if W2 is None:
+            np.random.seed(seed)
+            self.W2 = Parameter(np.random.normal(loc=0, scale=0.4, size=(D, D)))
+        
+        if self.W2.val.shape != (D, D):
+            raise ValueError("dimention of weight and dimesion are not equal")
+
+        if b1 is None:
+            # self.b1 = Parameter(np.zeros(D, 1))
+            self.b1 = Parameter(np.arange(D).reshape(D, 1))
+
+        if b2 is None:
+            self.b2 = Parameter(np.zeros(D, 1))        
+
+        self.register_parameters([self.W1, self.b1, self.W2, self.b2])
+    
+    def forward(self, x, T):
+        """ Forward propagation
+        Parameters
+        --------------
+        x : array-like, shape(num_nodes, num_nodes) or (batch_size, num_nodes, num_nodes)
+            Adjacency matrix of the graph
+        T : int
+            times of aggregating
+
+        Returns
+        ------------
+        output : numpy.ndarray, shape(1, D) or shape(batch_size, D)
+            output of layer
+        
+        Notes
+        --------
+        - xがbatchを持つ、3dの場合、0埋めでpaddingを行い、計算
+        - xがbatchを持たない2dの場合、batch_sizeを1としてoutputを返します
+        """
+        self._check_condition(x, T)
+
+        # save initial conditions
+        D = self.W1.val.shape[0] # dimension        
+        x = np.array(x) 
+        if x.ndim == 2: # 2d to 3d
+            x = x[np.newaxis, :, :]
+        
+        N = len(x) # batch_size
+        nums_node = [np.array(single_x).shape[1] for single_x in x] # get each number of nodes
+        
+        # initialize states and padding the input
+        states = np.zeros((N, D, max(nums_node)))
+        pad_x = np.zeros((N, max(nums_node), max(nums_node)))
+
+        for i, num_node in enumerate(nums_node): # padding
+            # x padding
+            pad_x[i, :num_node, :num_node] = np.array(x[i], dtype=float)
+            # initialize states
+            states[i, 0, :num_node] = np.ones(num_node)
+
+        for _ in range(T): # aggregate
+            a = np.matmul(states, pad_x)
+            
+            # first layer
+            print(np.matmul(self.W1.val, a))
+            print(np.matmul(self.W1.val, a) + self.b1.val)
+
+            h = sigmoid(np.matmul(self.W1.val, a) + self.b1.val)
+
+            print(h)
+            input()
+
+            # second layer            
+            states = sigmoid(np.matmul(self.W2.val, h) + self.b2.val)
+        
+        output = np.sum(states, axis=-1)
+
+        return output
+
+    def _check_condition(self, x, T):
+        """check the parameters
+        """
+        # check condition
+        # type
+        if not (isinstance(x, list) or isinstance(x, np.ndarray)):
+            raise TypeError("x should be array-like")
+        
+        # shape
+        if not (isinstance(x[0], list) or isinstance(x[0], np.ndarray)):
+            raise ValueError("x shape should be 2dim or 3dim")
+        
+        if isinstance(x[0][0], list) or isinstance(x[0][0], np.ndarray):
+            if isinstance(x[0][0][0], list) or isinstance(x[0][0][0], np.ndarray):
+                raise ValueError("x shape should be 2dim or 3dim")
+
+if __name__ == "__main__":
+
+    gnn = ExtendedGNN(8)
+
+    # test for batch
+    input_1 = np.array([[[2., 1., 0.5],
+                         [1., 0., -1.]],
+                         [[-2., -1., 0.5],
+                         [1., 0., 1.]]]) # batch
+    

@@ -76,8 +76,15 @@ $ python -m src.main_2.py
 $ python -m src.main_3.py
 ```
 
-実行するとfigが表示され、SGDとMomentum SGDにおいて、validation data, training dataともにlossが減少する様子が確認できます。
-結果が、./src/results/main_3_result.pngに保存されます。
+実行するとfigが表示され、SGD、または、Momentum SGDにおいて、validation data, training dataともにlossが減少する様子が確認できます。
+結果が、./src/results/main_3_result_train.pngと./src/results/main_3_result_valid.pngに保存されます。
+Optimizerを変更する場合は、./src/main_3.pyの87行目付近にある以下のプログラムを修正してください。例えば、以下だと、momentumを使用する設定です。
+
+```py
+# optimizer
+# self.optimizer = SGD(self.net.parameters, alpha=0.0001)
+self.optimizer = MomentumSGD(self.net.parameters, alpha=0.0001, beta=0.9)
+```
 
 - 課題4
 

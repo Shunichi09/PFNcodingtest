@@ -21,6 +21,7 @@ tests/__init__.py
 tests/test_Nets.py
 tests/common/__init__.py
 tests/common/test_Datafunctions.py
+tests/common/test_Datamodules.py
 tests/common/test_NNbases.py
 tests/common/test_NNfunctions.py
 tests/common/test_NNgrads.py
