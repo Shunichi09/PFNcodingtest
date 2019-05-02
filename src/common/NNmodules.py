@@ -197,7 +197,7 @@ class Linear(Module):
         if b is None:
             self.b = Parameter(np.zeros(out_features))
         
-        # check shape         
+        # check condition       
         if not self.A.val.shape[0] == in_features:
             raise ValueError("row size of A should have same size as in_features")
         
@@ -316,9 +316,14 @@ class GIN(Module):
 
     Attributes
     -------------
-    W : Parameter class, shape(D, D)
-        weights of graph, GNNの重み
-    
+    W1 : Parameter class, shape(D, D)
+        weights of graph
+    W2 : Parameter class, shape(D, D)
+        weights of graph
+    b1 : Parameter class, shape(D, 1)
+        bias of graph
+    b2 : Parameter class, shape(D, 1)
+        bias of graph
     
     See also
     ------------
@@ -336,13 +341,14 @@ class GIN(Module):
         seed : int, optional
             seed of random state, default is None 
         """
-        super(ExtendedGNN, self).__init__()
+        super(GIN, self).__init__()
 
         self.W1 = Parameter(np.array(W1))
         self.W2 = Parameter(np.array(W2))
         self.b1 = Parameter(np.array(b1))
         self.b2 = Parameter(np.array(b2))
 
+        # check condition
         if W1 is None:
             np.random.seed(seed)
             self.W1 = Parameter(np.random.normal(loc=0, scale=0.4, size=(D, D)))
@@ -358,10 +364,16 @@ class GIN(Module):
             raise ValueError("dimention of weight and dimesion are not equal")
 
         if b1 is None:
-            self.b1 = Parameter(np.zeros(D, 1))
+            self.b1 = Parameter(np.zeros((D, 1)))
+        
+        if self.b1.val.shape != (D, 1):
+            raise ValueError("dimention of bias and dimesion are not equal")
 
         if b2 is None:
-            self.b2 = Parameter(np.zeros((D, 1)))        
+            self.b2 = Parameter(np.zeros((D, 1)))
+        
+        if self.b2.val.shape != (D, 1):
+            raise ValueError("dimention of bias and dimesion are not equal")
 
         self.register_parameters([self.W1, self.b1, self.W2, self.b2])
     
@@ -383,6 +395,8 @@ class GIN(Module):
         --------
         - xがbatchを持つ、3dの場合、0埋めでpaddingを行い、計算
         - xがbatchを持たない2dの場合、batch_sizeを1としてoutputを返します
+        - b1とb2については、バッチに対応するため、stateやxと同様に0埋めを行ってから足します
+          (broadcastが対応できないためです。0のところも足し算されてしまう)
         """
         self._check_condition(x, T)
 
@@ -398,21 +412,29 @@ class GIN(Module):
         # initialize states and padding the input
         states = np.zeros((N, D, max(nums_node)))
         pad_x = np.zeros((N, max(nums_node), max(nums_node)))
+        pad_b1 = np.zeros((N, D, max(nums_node)))
+        pad_b2 = np.zeros((N, D, max(nums_node)))
 
         for i, num_node in enumerate(nums_node): # padding
             # x padding
             pad_x[i, :num_node, :num_node] = np.array(x[i], dtype=float)
             # initialize states
             states[i, 0, :num_node] = np.ones(num_node)
+            # b1 padding
+            pad_b1[i, :, :num_node] = np.broadcast_to(self.b1.val, (D, num_node))
+            # b2 padding
+            pad_b2[i, :, :num_node] = np.broadcast_to(self.b2.val, (D, num_node))
+
+        # print("pad_b1 = {}".format(pad_b1))
+        # print("pad_b2 = {}".format(pad_b2))
 
         for _ in range(T): # aggregate
             a = np.matmul(states, pad_x)
-            
             # first layer
-            h = sigmoid(np.matmul(self.W1.val, a) + self.b1.val)
+            h = relu(np.matmul(self.W1.val, a) + pad_b1)
 
             # second layer            
-            states = sigmoid(np.matmul(self.W2.val, h) + self.b2.val)
+            states = relu(np.matmul(self.W2.val, h) + pad_b2)
         
         output = np.sum(states, axis=-1)
 
@@ -436,7 +458,7 @@ class GIN(Module):
 
 if __name__ == "__main__":
 
-    gnn = ExtendedGNN(8)
+    gnn = GIN(8)
 
     # test for batch
     input_1 = np.array([[[0., 1., 0., 0.],

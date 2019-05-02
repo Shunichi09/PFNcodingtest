@@ -2,9 +2,9 @@ import unittest
 from unittest.mock import MagicMock, patch
 import numpy as np
 
-from src.main_2 import VanillaGNN
-from src.common.NNmodules import GNN, Linear
+from src.common.NNmodules import GNN, Linear, GIN
 from src.common.NNfunctions import sigmoid
+from src.Nets import VanillaGNN, VanillaGIN
 
 class TestVanillaGNN(unittest.TestCase):
     def setUp(self):
@@ -58,3 +58,17 @@ class TestVanillaGNN(unittest.TestCase):
         self.assertTrue((np.round(s, 5) == np.round(s_test, 5)).all())
         self.assertTrue((np.round(p, 5) == np.round(p_test, 5)).all())
         self.assertTrue((predict == predict_test).all())
+
+class TestVanillaGIN(unittest.TestCase):
+    def setUp(self):
+        pass
+
+    def test_initialize(self):
+        with patch.object(VanillaGIN, 'register_parameters', return_value=None):
+            with patch.object(GIN, '__init__', return_value=None) as mock_gin:
+                VanillaGIN()
+                mock_gin.assert_called_once()
+
+            with patch.object(Linear, '__init__', return_value=None) as mock_linear:
+                VanillaGIN()
+                mock_linear.assert_called_once()

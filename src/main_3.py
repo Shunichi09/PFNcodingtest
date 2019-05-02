@@ -1,12 +1,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+# original modules
 from .Nets import VanillaGNN
-from .common.NNfunctions import relu, sigmoid
-from .common.NNmodules import GNN, Linear, BinaryCrossEntropyLossWithSigmoid
+from .common.NNmodules import BinaryCrossEntropyLossWithSigmoid
 from .common.NNgrads import numerical_gradient
 from .common.NNoptims import SGD, MomentumSGD
-from .Nets import VanillaGNN
 from .common.Datamodules import DataLoader
 from .common.Datafunctions import shuffle
 

@@ -113,7 +113,7 @@ class VanillaGIN(Module):
         x : array-like, shape(N, in_features) or (in_features)
             input of NN (Graph)
         T : int, optional
-            times of aggregate, default is 2
+            times of aggregate, default is 1
 
         Returns
         ----------

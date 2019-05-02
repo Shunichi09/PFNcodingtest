@@ -317,8 +317,23 @@ class TestGIN(unittest.TestCase):
         # test for mismatch D and W dimention
         with self.assertRaises(ValueError): 
             D = 4
-            W = np.ones((3, 3))
-            GNN(D, W)
+            W1 = np.ones((3, 3))
+            GIN(D, W1=W1)
+        
+        with self.assertRaises(ValueError): 
+            D = 4
+            W2 = np.ones((3, 3))
+            GIN(D, W2=W2)
+        
+        with self.assertRaises(ValueError): 
+            D = 4
+            b1 = np.ones((3, 1))
+            GIN(D, b1=b1)
+
+        with self.assertRaises(ValueError): 
+            D = 4
+            b2 = np.ones((3, 1))
+            GIN(D, b2=b2)
 
     def test_forward(self):
         self.check_condition_forward()
@@ -327,82 +342,68 @@ class TestGIN(unittest.TestCase):
     def check_forward(self):
         # check value
         # test for non batch
-        D = 1
-        W = np.ones((D, D)) * 1.5
-        gnn = GIN(D, W)
+        D = 2
+        W1 = np.ones((D, D)) * 1.5
+        W2 = np.eye((D)) # eye
+        b1 = np.arange(D).reshape((D, 1))
+        b2 = np.zeros(D).reshape((D, 1)) # zero
 
-        input_1_1 = [[0., 1., 0., 0.],
-                     [1., 0., 1., 1.],
-                     [0., 1., 0., 1.],
-                     [0., 1., 1., 0.]] # non batch
+        gin = GIN(D, W1=W1, W2=W2, b1=b1, b2=b2)
+
+        input_1 = [[0., 1., 0.],
+                     [1., 0., 1.],
+                     [0., 1., 0.]] # non batch
         
         T = 1
-        output = gnn(input_1_1, T)
+        output = gin(input_1, T)
         self.assertTrue(output.shape == (1, D)) # shape
-        self.assertTrue((np.round(output, 5) ==  np.array([[12.]])).all()) # value
-        T = 2
-        output = gnn(input_1_1, T)
-        self.assertTrue((np.round(output, 5) ==  np.array([[40.5]])).all()) # value
+
+        test_output = sigmoid(sigmoid(np.array([[[1.5, 3., 1.5], [2.5, 4., 2.5]]]))) # hand calculation
+        test_output = np.sum(test_output, axis=-1)
+
+        self.assertTrue((np.round(output, 5) == np.round(test_output, 5)).all()) # value
         
-        input_1_2 = np.array([[0., 1., 0., 0.],
-                              [1., 0., 1., 1.],
-                              [0., 1., 0., 1.],
-                              [0., 1., 1., 0.]]) # non batch in numpy.ndarray
-
-        T = 1
-        output = gnn(input_1_2, T)
-        self.assertTrue(output.shape == (1, D)) # shape
-        self.assertTrue((np.round(output, 5) ==  np.array([[12.]])).all()) # value
-        T = 2
-        output = gnn(input_1_2, T)
-        self.assertTrue((np.round(output, 5) ==  np.array([[40.5]])).all()) # value
-
         # test for with batch
         D = 2
         batch_size = 2
-        W = np.array([[0.5, -1.],
-                      [-0.5, 0.1]])
-        gnn = GNN(D, W)
+        W1 = np.ones((D, D)) * 1.5
+        W2 = np.eye((D)) # eye
+        b1 = np.arange(D).reshape((D, 1))
+        b2 = np.zeros(D).reshape((D, 1)) # zero
 
-        input_2_1 = [[[0., 1., 0., 0.],
-                      [1., 0., 1., 1.],
-                      [0., 1., 0., 1.],
-                      [0., 1., 1., 0.]], 
-                     [[0., 1., 0.],
-                      [1., 0., 1.],
-                      [0., 1., 0.]]] # batch
-
-        T = 1
-        output = gnn(input_2_1, T)
-        self.assertTrue(output.shape == (batch_size, D)) # shape
-        self.assertTrue((np.round(output, 5) == np.array([[4., 0.], [2., 0.]])).all()) # value
-
-        T = 2
-        output = gnn(input_2_1, T)
-        self.assertTrue((np.round(output, 5) == np.array([[4.5, 0.], [ 1.5, 0.]])).all()) # value
-
-        input_2_2 = np.array([[[0., 1., 0., 0.],
-                               [1., 0., 1., 1.],
-                               [0., 1., 0., 1.],
-                               [0., 1., 1., 0.]], 
-                              [[0., 1., 0.],
-                               [1., 0., 1.],
-                               [0., 1., 0.]]]) # batch in numpy.ndarray
+        gin = GIN(D, W1=W1, W2=W2, b1=b1, b2=b2)
+        
+        input_2 = [[[0., 1., 0., 0.],
+                    [1., 0., 1., 1.],
+                    [0., 1., 0., 1.],
+                    [0., 1., 1., 0.]], 
+                   [[0., 1., 0.],
+                    [1., 0., 1.],
+                    [0., 1., 0.]]] # batch
 
         T = 1
-        output = gnn(input_2_2, T)
+        output = gin(input_2, T)
         self.assertTrue(output.shape == (batch_size, D)) # shape
-        self.assertTrue((np.round(output, 5) == np.array([[4., 0.], [2., 0.]])).all()) # value
 
-        T = 2
-        output = gnn(input_2_2, T)
-        self.assertTrue((np.round(output, 5) == np.array([[4.5, 0.], [ 1.5, 0.]])).all()) # value
+        array_1 = np.array([[1.5, 4.5, 3., 3.],
+                            [2.5, 5.5, 4., 4.]])
+        
+        array_2 = np.array([[1.5, 3., 1.5, 0.],
+                            [2.5, 4., 2.5, 0.]])
+
+        test_output = np.array([array_1, array_2])
+
+        test_output = sigmoid(sigmoid(test_output)) # hand calculation
+        test_output = np.sum(test_output, axis=-1)
+
+        self.assertTrue((np.round(output, 5) == np.round(test_output, 5)).all()) # value
+        
 
     def check_condition_forward(self):
         # check initialize
         D = 1
         T = 1
-        gnn = GNN(D)
+        gnn = GIN(D)
 
         # test for input of type
         input_3 = 0. # float

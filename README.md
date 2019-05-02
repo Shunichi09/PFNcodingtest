@@ -78,7 +78,7 @@ $ python -m src.main_3.py
 
 実行するとfigが表示され、SGD、または、Momentum SGDにおいて、validation data, training dataでのlossとaccuracyの様子が確認できます。
 結果が、./src/results/main_3_result_train.pngと./src/results/main_3_result_valid.pngに保存されます。
-Optimizerを変更する場合は、./src/main_3.pyの87行目付近にある以下のプログラムを修正してください。例えば、以下だと、momentumを使用する設定です。
+Optimizerを変更する場合は、./src/main_3.pyの87行目付近にある以下のプログラムを修正してください。例えば、以下だと、momentumSGDを使用する設定です。
 
 ```py
 # optimizer
@@ -93,10 +93,10 @@ $ python -m src.main_4.py
 ```
 
 実行するとfigが表示されます。
-課題として、GNNの集約ステップをMLPにすることを行いました。
+課題として、GNNの集約ステップをMLPにすること（活性化関数にはReluを用いています）を行いました。
 Momentum SGDにおいて、validation data, training dataともにlossが減少する様子が確認できます。
 また、課題3と比較して性能が向上していることも確認できます。
-結果が、./src/results/main_4_result.pngに保存されます。
+結果が、./src/results/main_4_result_train.pngと./src/results/main_4_result_valid.pngに保存されます。
 
 # Requirements
 

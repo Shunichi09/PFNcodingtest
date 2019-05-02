@@ -9,6 +9,7 @@ src/Nets.py
 src/__init__.py
 src/main_2.py
 src/main_3.py
+src/main_4.py
 src/common/Datafunctions.py
 src/common/Datamodules.py
 src/common/NNbases.py
