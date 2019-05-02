@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from .Nets import VanillaGNN
+from .Nets import VanillaGIN
 from .common.NNfunctions import relu, sigmoid
 from .common.NNmodules import GNN, Linear, BinaryCrossEntropyLossWithSigmoid
 from .common.NNgrads import numerical_gradient

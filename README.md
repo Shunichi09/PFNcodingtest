@@ -59,7 +59,7 @@ $ python -m unittest tests.common.test_NNmodules.TestGNN -v
 ```
 
 課題1のGNNテストのみについては、./tests/test_NNmodules.pyのTestGNNに記載してあります。
-全体のテストの実行で述べた方法でおねがいします。
+全体のテストは、テストの実行で述べた方法でおねがいします。
 
 - 課題2
 
@@ -76,7 +76,7 @@ $ python -m src.main_2.py
 $ python -m src.main_3.py
 ```
 
-実行するとfigが表示され、SGD、または、Momentum SGDにおいて、validation data, training dataともにlossが減少する様子が確認できます。
+実行するとfigが表示され、SGD、または、Momentum SGDにおいて、validation data, training dataでのlossとaccuracyの様子が確認できます。
 結果が、./src/results/main_3_result_train.pngと./src/results/main_3_result_valid.pngに保存されます。
 Optimizerを変更する場合は、./src/main_3.pyの87行目付近にある以下のプログラムを修正してください。例えば、以下だと、momentumを使用する設定です。
 
@@ -92,8 +92,11 @@ self.optimizer = MomentumSGD(self.net.parameters, alpha=0.0001, beta=0.9)
 $ python -m src.main_4.py
 ```
 
-実行するとfigが表示され、SGDとMomentum SGDにおいて、validation data, training dataともにlossが減少する様子が確認できます。
-結果が、./src/results/main_3_result.pngに保存されます。
+実行するとfigが表示されます。
+課題として、GNNの集約ステップをMLPにすることを行いました。
+Momentum SGDにおいて、validation data, training dataともにlossが減少する様子が確認できます。
+また、課題3と比較して性能が向上していることも確認できます。
+結果が、./src/results/main_4_result.pngに保存されます。
 
 # Requirements
 

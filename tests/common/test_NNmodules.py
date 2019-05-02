@@ -3,7 +3,7 @@ import numpy as np
 
 # original modules
 from src.common.NNfunctions import sigmoid, relu
-from src.common.NNmodules import GNN, Linear, BinaryCrossEntropyLossWithSigmoid
+from src.common.NNmodules import GNN, Linear, BinaryCrossEntropyLossWithSigmoid, GIN
 
 # test GNN
 class TestGNN(unittest.TestCase):
@@ -307,3 +307,123 @@ class TestBinaryCrossEntropyLossWithSigmoid(unittest.TestCase):
         output = np.sum(loss) / N
 
         return output
+
+class TestGIN(unittest.TestCase):
+    def setUp(self):
+        pass
+        
+    def test_initialize(self):
+        # check weight initialize
+        # test for mismatch D and W dimention
+        with self.assertRaises(ValueError): 
+            D = 4
+            W = np.ones((3, 3))
+            GNN(D, W)
+
+    def test_forward(self):
+        self.check_condition_forward()
+        self.check_forward()
+    
+    def check_forward(self):
+        # check value
+        # test for non batch
+        D = 1
+        W = np.ones((D, D)) * 1.5
+        gnn = GIN(D, W)
+
+        input_1_1 = [[0., 1., 0., 0.],
+                     [1., 0., 1., 1.],
+                     [0., 1., 0., 1.],
+                     [0., 1., 1., 0.]] # non batch
+        
+        T = 1
+        output = gnn(input_1_1, T)
+        self.assertTrue(output.shape == (1, D)) # shape
+        self.assertTrue((np.round(output, 5) ==  np.array([[12.]])).all()) # value
+        T = 2
+        output = gnn(input_1_1, T)
+        self.assertTrue((np.round(output, 5) ==  np.array([[40.5]])).all()) # value
+        
+        input_1_2 = np.array([[0., 1., 0., 0.],
+                              [1., 0., 1., 1.],
+                              [0., 1., 0., 1.],
+                              [0., 1., 1., 0.]]) # non batch in numpy.ndarray
+
+        T = 1
+        output = gnn(input_1_2, T)
+        self.assertTrue(output.shape == (1, D)) # shape
+        self.assertTrue((np.round(output, 5) ==  np.array([[12.]])).all()) # value
+        T = 2
+        output = gnn(input_1_2, T)
+        self.assertTrue((np.round(output, 5) ==  np.array([[40.5]])).all()) # value
+
+        # test for with batch
+        D = 2
+        batch_size = 2
+        W = np.array([[0.5, -1.],
+                      [-0.5, 0.1]])
+        gnn = GNN(D, W)
+
+        input_2_1 = [[[0., 1., 0., 0.],
+                      [1., 0., 1., 1.],
+                      [0., 1., 0., 1.],
+                      [0., 1., 1., 0.]], 
+                     [[0., 1., 0.],
+                      [1., 0., 1.],
+                      [0., 1., 0.]]] # batch
+
+        T = 1
+        output = gnn(input_2_1, T)
+        self.assertTrue(output.shape == (batch_size, D)) # shape
+        self.assertTrue((np.round(output, 5) == np.array([[4., 0.], [2., 0.]])).all()) # value
+
+        T = 2
+        output = gnn(input_2_1, T)
+        self.assertTrue((np.round(output, 5) == np.array([[4.5, 0.], [ 1.5, 0.]])).all()) # value
+
+        input_2_2 = np.array([[[0., 1., 0., 0.],
+                               [1., 0., 1., 1.],
+                               [0., 1., 0., 1.],
+                               [0., 1., 1., 0.]], 
+                              [[0., 1., 0.],
+                               [1., 0., 1.],
+                               [0., 1., 0.]]]) # batch in numpy.ndarray
+
+        T = 1
+        output = gnn(input_2_2, T)
+        self.assertTrue(output.shape == (batch_size, D)) # shape
+        self.assertTrue((np.round(output, 5) == np.array([[4., 0.], [2., 0.]])).all()) # value
+
+        T = 2
+        output = gnn(input_2_2, T)
+        self.assertTrue((np.round(output, 5) == np.array([[4.5, 0.], [ 1.5, 0.]])).all()) # value
+
+    def check_condition_forward(self):
+        # check initialize
+        D = 1
+        T = 1
+        gnn = GNN(D)
+
+        # test for input of type
+        input_3 = 0. # float
+
+        with self.assertRaises(TypeError):
+            gnn(input_3, T)
+
+        # test for input of shape
+        input_4_1 = [[[[0.]]]] # test for too many dim    
+        input_4_2 = np.zeros((4, 3, 2, 1)) # test for too many dim in numpy.ndarray
+        input_4_3 = [0.] # test for less dim 
+        input_4_4 = np.array([0.]) # test for less dim in numpy.ndarray
+
+        with self.assertRaises(ValueError):
+            gnn(input_4_1, T)
+
+        with self.assertRaises(ValueError):
+            gnn(input_4_2, T)
+
+        with self.assertRaises(ValueError):
+            gnn(input_4_3, T)
+
+        with self.assertRaises(ValueError):    
+            gnn(input_4_4, T)

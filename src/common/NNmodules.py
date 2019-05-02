@@ -5,6 +5,9 @@ import numpy as np
 from .NNfunctions import sigmoid, relu
 from .NNbases import Parameter, Module
 
+# from NNfunctions import sigmoid, relu
+# from NNbases import Parameter, Module
+
 class GNN(Module):
     """graph neural network
 
@@ -308,7 +311,7 @@ class BinaryCrossEntropyLossWithSigmoid(Module):
             raise ValueError("target should only have 1 or 0")
 
 
-class ExtendedGNN(Module):
+class GIN(Module):
     """graph neural network with MLPs
 
     Attributes
@@ -355,11 +358,10 @@ class ExtendedGNN(Module):
             raise ValueError("dimention of weight and dimesion are not equal")
 
         if b1 is None:
-            # self.b1 = Parameter(np.zeros(D, 1))
-            self.b1 = Parameter(np.arange(D).reshape(D, 1))
+            self.b1 = Parameter(np.zeros(D, 1))
 
         if b2 is None:
-            self.b2 = Parameter(np.zeros(D, 1))        
+            self.b2 = Parameter(np.zeros((D, 1)))        
 
         self.register_parameters([self.W1, self.b1, self.W2, self.b2])
     
@@ -407,13 +409,7 @@ class ExtendedGNN(Module):
             a = np.matmul(states, pad_x)
             
             # first layer
-            print(np.matmul(self.W1.val, a))
-            print(np.matmul(self.W1.val, a) + self.b1.val)
-
             h = sigmoid(np.matmul(self.W1.val, a) + self.b1.val)
-
-            print(h)
-            input()
 
             # second layer            
             states = sigmoid(np.matmul(self.W2.val, h) + self.b2.val)
@@ -443,8 +439,13 @@ if __name__ == "__main__":
     gnn = ExtendedGNN(8)
 
     # test for batch
-    input_1 = np.array([[[2., 1., 0.5],
-                         [1., 0., -1.]],
-                         [[-2., -1., 0.5],
-                         [1., 0., 1.]]]) # batch
+    input_1 = np.array([[[0., 1., 0., 0.],
+                         [1., 0., 1., 1.],
+                         [0., 1., 0., 1.],
+                         [0., 1., 1., 0.]], 
+                        [[0., 1., 0.],
+                         [1., 0., 1.],
+                         [0., 1., 0.]]]) # batch in numpy.ndarray
+    
+    gnn(input_1, 2)
     
