@@ -7,7 +7,7 @@ pfnインターンコーディング課題
 
 ```
 .
-├── prediction.txt
+├── prediction.txt(ASCII (LF))
 ├── report.pdf
 ├── README.md
 ├── src
@@ -101,6 +101,7 @@ $ python -m src.main_4.py
 Momentum SGDにおいて、validation data, training dataでのlossとaccuracyの様子が確認できます。
 また、課題3と比較して性能が向上していることも確認できます。
 結果が、./src/results/main_4_result_train.pngと./src/results/main_4_result_valid.pngに保存されます。
+**テストデータをもとにprediction.txtが作成されます。提出物のprediction.txtは、文字コードがASCII (LF)になっています。**
 
 # Requirements
 
