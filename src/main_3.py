@@ -21,6 +21,10 @@ class Trainer():
         input data of validation
     Y_valid : numpy.ndarray, shape(number_valid, 1)
         output data of validation
+    history_train_loss : list
+    history_train_accuracy : list
+    history_valid_loss : list
+    history_valid_accuracy : list
     """
     def __init__(self, X_train, Y_train, X_valid, Y_valid):
         """
@@ -65,8 +69,8 @@ class Trainer():
         self.loss_fn = BinaryCrossEntropyLossWithSigmoid()
 
         # optimizer
-        self.optimizer = SGD(self.net.parameters, alpha=0.0001)
-        # self.optimizer = MomentumSGD(self.net.parameters, alpha=0.0001, beta=0.9)
+        # self.optimizer = SGD(self.net.parameters, alpha=0.0001)
+        self.optimizer = MomentumSGD(self.net.parameters, alpha=0.0001, beta=0.9)
 
         # training parameters
         number_train = self.X_train.shape[0]
@@ -81,8 +85,6 @@ class Trainer():
             loss = self.loss_fn(s, t)
             return loss
         
-        grad_fn = lambda param : foward_with_loss(G, t)
-
         for epoch in range(EPOCHS):
             # shuffle data
             X, Y = shuffle(self.X_train, self.Y_train, seed=None) 
@@ -99,6 +101,7 @@ class Trainer():
                 t = Y[start:end]
 
                 # calc grad
+                grad_fn = lambda param : foward_with_loss(G, t)
                 numerical_gradient(self.net.parameters, grad_fn)
                 self.optimizer.step()
 
@@ -166,18 +169,26 @@ def main():
     axis_train_loss.set_xlabel("iterations")
 
     # train loss
-    axis_train_loss.plot(np.arange(len(trainer.history_train_loss)), trainer.history_train_loss, label="loss_raw", color="b", alpha=0.15)
+    axis_train_loss.plot(np.arange(len(trainer.history_train_loss)), trainer.history_train_loss, label="loss_raw", color="b", alpha=0.2) # raw
     # Moving Average
     num_moving = 75
     kernel = np.ones(num_moving)/num_moving
-    axis_train_loss.plot(np.arange(0, len(trainer.history_train_loss)-num_moving), np.convolve(trainer.history_train_loss, kernel, mode="same")[:-num_moving], label="loss_ave", color="b")
+    axis_train_loss.plot(np.arange(num_moving, len(trainer.history_train_loss)-num_moving),
+                         np.convolve(trainer.history_train_loss, kernel, mode="same")[num_moving:-num_moving],
+                         label="loss_ave", color="b") # moving average
     axis_train_loss.set_ylabel("loss")
-    
+    # set ylim
+    axis_train_loss.set_ylim(0.5, 1.0)
+
     # train accuracy
     axis_train_accuracy = axis_train_loss.twinx() # add accuracy axis
-    axis_train_accuracy.plot(np.arange(len(trainer.history_train_accuracy)), trainer.history_train_accuracy, label="accuracy_row", color="r", alpha=0.15)
-    axis_train_accuracy.plot(np.arange(0, len(trainer.history_train_accuracy)-num_moving), np.convolve(trainer.history_train_accuracy, kernel, mode="same")[:-num_moving], label="accuracy_ave", color="r")    
+    axis_train_accuracy.plot(np.arange(len(trainer.history_train_accuracy)), trainer.history_train_accuracy, label="accuracy_row", color="r", alpha=0.2) # raw
+    axis_train_accuracy.plot(np.arange(num_moving, len(trainer.history_train_accuracy)-num_moving),
+                             np.convolve(trainer.history_train_accuracy, kernel, mode="same")[num_moving:-num_moving],
+                             label="accuracy_ave", color="r") # moving average
     axis_train_accuracy.set_ylabel("accuracy")
+    # set ylim
+    axis_train_accuracy.set_ylim(0.3, 0.7)
 
     fig_train.legend(ncol=4)
     fig_train.savefig("./src/results/main_3_result_train.png")
@@ -188,15 +199,23 @@ def main():
     axis_valid_loss.set_xlabel("iterations")
 
     # valid loss
-    axis_valid_loss.plot(np.arange(len(trainer.history_valid_loss)), trainer.history_valid_loss, label="loss_raw", color="y", alpha=0.15)
-    axis_valid_loss.plot(np.arange(0, len(trainer.history_valid_loss)-num_moving), np.convolve(trainer.history_valid_loss, kernel, mode="same")[:-num_moving], label="loss_ave", color="y")
+    axis_valid_loss.plot(np.arange(len(trainer.history_valid_loss)), trainer.history_valid_loss, label="loss_raw", color="y", alpha=0.2) # raw
+    axis_valid_loss.plot(np.arange(num_moving, len(trainer.history_valid_loss)-num_moving),
+                         np.convolve(trainer.history_valid_loss, kernel, mode="same")[num_moving:-num_moving],
+                         label="loss_ave", color="y") # moving average
     axis_valid_loss.set_ylabel("loss")
+    # set ylim
+    axis_valid_loss.set_ylim(0.5, 1.0)
 
     # valid accuracy
     axis_valid_accuracy = axis_valid_loss.twinx() # add accuracy axis
-    axis_valid_accuracy.plot(np.arange(len(trainer.history_valid_accuracy)), trainer.history_valid_accuracy, label="accuracy_row", color="g", alpha=0.15)
-    axis_valid_accuracy.plot(np.arange(0, len(trainer.history_valid_accuracy)-num_moving), np.convolve(trainer.history_valid_accuracy, kernel, mode="same")[:-num_moving], label="accuracy_ave", color="g")    
+    axis_valid_accuracy.plot(np.arange(len(trainer.history_valid_accuracy)), trainer.history_valid_accuracy, label="accuracy_row", color="g", alpha=0.2) # raw
+    axis_valid_accuracy.plot(np.arange(num_moving, len(trainer.history_valid_accuracy)-num_moving),
+                             np.convolve(trainer.history_valid_accuracy, kernel, mode="same")[num_moving:-num_moving],
+                             label="accuracy_ave", color="g") # moving average
     axis_valid_accuracy.set_ylabel("accuracy")
+    # set ylim
+    axis_valid_accuracy.set_ylim(0.3, 0.7)
 
     fig_valid.legend(ncol=4)
     fig_valid.savefig("./src/results/main_3_result_valid.png")

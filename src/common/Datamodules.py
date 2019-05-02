@@ -77,7 +77,7 @@ class DataLoader():
         self.Y_train = np.array(self.Y_train)
         self.X_test = np.array(self.X_test)
 
-    def hold_out(self, ratio=0.4, shuffle=False, seed=None):
+    def hold_out(self, ratio=0.4, shuffle=True, seed=None):
         """ hold out the train data with keeping the ratio of label data
         Parameters
         -------------

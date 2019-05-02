@@ -1,12 +1,8 @@
-import warnings
 import numpy as np
 
 # original modules
 from .NNfunctions import sigmoid, relu
 from .NNbases import Parameter, Module
-
-# from NNfunctions import sigmoid, relu
-# from NNbases import Parameter, Module
 
 class GNN(Module):
     """graph neural network

@@ -358,7 +358,7 @@ class TestGIN(unittest.TestCase):
         output = gin(input_1, T)
         self.assertTrue(output.shape == (1, D)) # shape
 
-        test_output = sigmoid(sigmoid(np.array([[[1.5, 3., 1.5], [2.5, 4., 2.5]]]))) # hand calculation
+        test_output = relu(relu(np.array([[[1.5, 3., 1.5], [2.5, 4., 2.5]]]))) # hand calculation
         test_output = np.sum(test_output, axis=-1)
 
         self.assertTrue((np.round(output, 5) == np.round(test_output, 5)).all()) # value
@@ -393,7 +393,7 @@ class TestGIN(unittest.TestCase):
 
         test_output = np.array([array_1, array_2])
 
-        test_output = sigmoid(sigmoid(test_output)) # hand calculation
+        test_output = relu(relu(test_output)) # hand calculation
         test_output = np.sum(test_output, axis=-1)
 
         self.assertTrue((np.round(output, 5) == np.round(test_output, 5)).all()) # value

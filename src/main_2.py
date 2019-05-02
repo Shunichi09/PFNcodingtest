@@ -2,11 +2,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # original modules
-from .common.NNfunctions import relu, sigmoid
-from .common.NNmodules import GNN, Linear, BinaryCrossEntropyLossWithSigmoid
+from .Nets import VanillaGNN
+from .common.NNmodules import BinaryCrossEntropyLossWithSigmoid
 from .common.NNgrads import numerical_gradient
 from .common.NNoptims import SGD
-from .Nets import VanillaGNN
 
 def main():
     # network
